@@ -53,5 +53,6 @@ th {
 }
 
 .indent {
-    text-indent: 2em;
+    padding-left: 2em;
+    display: block;
 }
