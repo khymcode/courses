@@ -28,17 +28,23 @@
         The tone organ generates musical notes by slowing down the 50 MHz clock signal from the FPGA to produce audible frequencies. This is done 
         using a counter-based clock divider that waits a specific number of clock ticks before toggling the output signal. Each toggle switches the 
         signal from HIGH to LOW or LOW to HIGH, creating a square wave that can be used to drive the audio output.
-
+        </p>
+         
+        </p>
         To determine how many ticks are needed before toggling, we consider that a square wave completes one full cycle with two transitions—one 
         rising and one falling. Therefore, the counter only needs to wait for half the period of the desired output frequency before toggling. 
+        </p>
         
+        </p>
         This leads to the formula:
-
+        </p>
+            </p>
             divider = (ƒclk) * 1/(2*ƒtone) where ƒclk is the clock frequency (50E6), and ƒtone is the frequency of the musical note.
+            </p>
 
+        </p>
         The resulting signal is converted into an 8-bit signed value and sent to the audio codec. SignalTap is used to observe waveform behavior 
         and system state in real time, acting as a debugging interface similar to a virtual LCD.
-        
         </p>
 
         <h2>Objectives</h2>
