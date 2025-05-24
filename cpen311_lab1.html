@@ -175,7 +175,7 @@ endmodule</code></pre>
         A 1 Hz clock divider updates LEDR[7:0] to create a "bouncing" effect. Timing control is achieved using key debounce and edge detection logic.
         </p>
 
-        <h2>Implementation</h2>
+        <h2>Photos</h2>
 
         <h3>RTL Viewer Snapshot</h3>
         <p>
@@ -188,6 +188,15 @@ endmodule</code></pre>
         Below is a closer look at the clock divider logic within the RTL diagram, showing internal signal flow more clearly.
         </p>
         <img src="assets/rtl_zoomed.png" alt="Zoomed-in RTL viewer diagram" width="600">
+
+        <h4>SignalTap LCD Output</h4>
+        <p>
+        The following SignalTap capture demonstrates the system in Info Console mode. Line 1 displays the custom message,
+        while Line 2 shows the switch state and audio data in hexadecimal. Below, channels A and B confirm the selected note 
+        ("MI") and switch label ("SW0"), alongside their corresponding binary values.
+        </p>
+        <img src="assets/scope_lcd_capture.png" alt="SignalTap LCD and scope capture" width="700">
+
 
         <h2>Results</h2>
         <ul>
