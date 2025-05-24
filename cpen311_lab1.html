@@ -114,6 +114,51 @@ endmodule</code></pre>
     <tr><td>111</td><td>Do2</td><td>1046</td><td>23900</td></tr>
 </table>
 
+        <h3>LED Pattern</h3>
+        <p>
+        A 1 Hz clock divider updates LEDR[7:0] to create a "bouncing" effect. Timing control is achieved using key debounce and edge detection logic.
+        </p>
+
+        <p>
+        The following module defines the LED bounce logic. A single bit is shifted left each clock cycle until it reaches the end, then reverses direction. 
+        The `direction` flag tracks which way the LEDs are moving. The pattern resets to the starting position on system reset.
+        </p>
+
+        <pre><code>module LED_Bounce(
+    input  logic clk_1hz,
+    input  logic reset,
+    output logic [7:0] led_out
+);
+
+    logic [7:0] led_pattern = 8'b00000001;
+    logic direction = 1'b0;
+
+    always_ff @(posedge clk_1hz) begin
+        if (reset) begin
+            led_pattern &lt;= 8'b00000001;
+            direction   &lt;= 1'b0;
+        end else begin
+            if (direction == 1'b0) begin
+                if (led_pattern == 8'b10000000) begin
+                    direction   &lt;= 1'b1;
+                    led_pattern &lt;= led_pattern >> 1;
+                end else begin
+                    led_pattern &lt;= led_pattern << 1;
+                end
+            end else begin
+                if (led_pattern == 8'b00000001) begin
+                    direction   &lt;= 1'b0;
+                    led_pattern &lt;= led_pattern << 1;
+                end else begin
+                    led_pattern &lt;= led_pattern >> 1;
+                end
+            end
+        end
+    end
+
+    assign led_out = led_pattern;
+
+endmodule</code></pre>
 
 
         <h3>SignalTap LCD Console</h3>
