@@ -1,0 +1,70 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Reflow Oven Controller – ELEC 291</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="navbar">
+        <a href="index.html">Home</a>
+        <a href="courses.html">Courses</a>
+    </div>
+
+    <div class="content">
+        <h1>Project 1: Reflow Oven Controller</h1>
+        <p><strong>Course:</strong> ELEC 291 – Embedded Systems</p>
+
+        <h2>Overview</h2>
+        <p>
+        The Reflow Oven Controller project aimed to develop a low-cost, microcontroller-based system for reflow soldering PCBs. Utilizing an EFM8 microcontroller,
+        K-type thermocouple, op-amp amplifier, and a charge pump, the controller implements a finite state machine (FSM) for precise temperature cycle management.
+        </p>
+
+        <h2>Design Process</h2>
+        <p>
+        We initiated our design by identifying the need for a controlled heating system for reflow soldering. We researched reflow profiles and realized the importance of controlling phases such as preheat, soak, reflow, and cooling. Design considerations included a solid-state relay for safe switching, FSM-based control, LCD interface, serial debugging, and thermal accuracy.
+        </p>
+
+        <h2>Investigation & Implementation</h2>
+        <p>
+        Our team began by prototyping and testing individual components—thermocouple amplification, LCD interfacing, button debounce logic, and FSM transition control.
+        Components were validated individually and then integrated, with frequent data logging via PuTTY to verify system behavior.
+        </p>
+
+        <h2>Evaluation of Design Choices</h2>
+        <ul>
+            <li><strong>Push Buttons:</strong> Chose display-based simple digital buttons for easy integration and multi-button capabilities.</li>
+            <li><strong>Sound:</strong> Opted for microcontroller-based tone generation (timer 0) over 555 timer for reliability and simplicity.</li>
+            <li><strong>FSM:</strong> Implemented directly inside the ISR for readability and efficiency.</li>
+            <li><strong>Debouncing:</strong> Chose ISR logic over Waitms due to better consistency.</li>
+            <li><strong>Op-Amp Network:</strong> Switched to high-value resistors (470kΩ and 2kΩ) to avoid loading effects and improve measurement accuracy.</li>
+        </ul>
+
+        <h2>Hardware Description</h2>
+        <p>
+        The circuit features an OP07 precision op-amp to amplify the small voltage produced by the thermocouple. It is configured as an inverting amplifier to simplify microcontroller calculations.
+        A TC7660 charge pump is used to provide a -5V supply to the op-amp, ensuring full-range bipolar operation.
+        </p>
+        <img src="0a914884-6b31-4684-9b3b-074cba686c42.png" alt="Op-Amp and Charge Pump Circuit" width="400">
+
+        <h2>Data Collection & Testing</h2>
+        <p>
+        Temperature values were sampled at 2250Hz and averaged over 150 readings to reduce noise. Serial logging and threshold manipulation allowed efficient FSM debugging.
+        Comparative tests with a digital multimeter helped calibrate the system and reduce error to ±3°C between 25°C and 240°C.
+        </p>
+
+        <h2>Analysis & Challenges</h2>
+        <p>
+        Initial inaccuracies were traced back to low op-amp feedback resistances. Swapping to higher resistance values resolved these. 
+        Thermal readings were further calibrated in software using offset corrections. Our testing process identified thermal lag issues, which were resolved with optimized gain and updated measurement logic.
+        </p>
+
+        <h2>Conclusion</h2>
+        <p>
+        Through systematic testing, analysis, and iteration, our team successfully developed a robust reflow oven controller. The project demonstrated application of embedded systems to solve complex engineering problems, including sensor interfacing, control logic, and analog circuit design.
+        </p>
+    </div>
+</body>
+</html>
