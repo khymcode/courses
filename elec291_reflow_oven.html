@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Reflow Oven Controller – ELEC 291</title>
+    <title>Reflow Oven Controller | ELEC 291</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -14,57 +14,174 @@
 
     <div class="content">
         <h1>Project 1: Reflow Oven Controller</h1>
-        <p><strong>Course:</strong> ELEC 291 – Embedded Systems</p>
+        <p><strong>Course:</strong> ELEC 291 Embedded Systems</p>
 
-        <h2>Overview</h2>
+        <h2>Project Overview</h2>
         <p>
-        The Reflow Oven Controller project aimed to develop a low-cost, microcontroller-based system for reflow soldering PCBs. Utilizing an EFM8 microcontroller,
-        K-type thermocouple, op-amp amplifier, and a charge pump, the controller implements a finite state machine (FSM) for precise temperature cycle management.
+        This project focused on creating a cost-effective reflow oven controller using the N76E003 microcontroller.
+        The objective was to control the temperature profile necessary for soldering PCBs reliably, mimicking industrial reflow ovens
+        by dividing the process into preheat, soak, reflow, and cooling phases. 
         </p>
 
-        <h2>Design Process</h2>
+        <h2>Design Motivation</h2>
         <p>
-        We initiated our design by identifying the need for a controlled heating system for reflow soldering. We researched reflow profiles and realized the importance of controlling phases such as preheat, soak, reflow, and cooling. Design considerations included a solid-state relay for safe switching, FSM-based control, LCD interface, serial debugging, and thermal accuracy.
+        Traditional reflow ovens are costly and inaccessible for student projects. Our design used accessible components
+        to provide temperature control via a thermocouple, precision op-amp circuit, solid-state relay for heat control, and 
+        finite state machine logic to automate each phase.
         </p>
 
-        <h2>Investigation & Implementation</h2>
-        <p>
-        Our team began by prototyping and testing individual components—thermocouple amplification, LCD interfacing, button debounce logic, and FSM transition control.
-        Components were validated individually and then integrated, with frequent data logging via PuTTY to verify system behavior.
-        </p>
-
-        <h2>Evaluation of Design Choices</h2>
+        <h2>Design Components</h2>
         <ul>
-            <li><strong>Push Buttons:</strong> Chose display-based simple digital buttons for easy integration and multi-button capabilities.</li>
-            <li><strong>Sound:</strong> Opted for microcontroller-based tone generation (timer 0) over 555 timer for reliability and simplicity.</li>
-            <li><strong>FSM:</strong> Implemented directly inside the ISR for readability and efficiency.</li>
-            <li><strong>Debouncing:</strong> Chose ISR logic over Waitms due to better consistency.</li>
-            <li><strong>Op-Amp Network:</strong> Switched to high-value resistors (470kΩ and 2kΩ) to avoid loading effects and improve measurement accuracy.</li>
+            <li>Thermocouple and OP07 op-amp for accurate temperature readings</li>
+            <li>Charge pump to supply -5V to the op-amp</li>
+            <li>Finite State Machine for controlling reflow phases</li>
+            <li>Multiplexed push-button input with user interface on LCD</li>
+            <li>Serial logging for debugging and validation</li>
         </ul>
 
-        <h2>Hardware Description</h2>
+        <h2>Results</h2>
         <p>
-        The circuit features an OP07 precision op-amp to amplify the small voltage produced by the thermocouple. It is configured as an inverting amplifier to simplify microcontroller calculations.
-        A TC7660 charge pump is used to provide a -5V supply to the op-amp, ensuring full-range bipolar operation.
+        After calibration and tuning, our system successfully executed reflow cycles with ±3°C accuracy between 25°C and 240°C.
+        We verified transitions through serial logging and compared microcontroller readings against a multimeter and oscilloscope.
+        Testing confirmed our FSM logic worked under all valid scenarios and aborted appropriately during thermal error conditions.
+        </p>
+
+        <h2>Hardware Architecture</h2>
+        <p>
+        The thermocouple signal is amplified using an OP07 precision op-amp in an inverting configuration. A TC7660 charge pump
+        supplies -5V, ensuring full-range bipolar output. We used 470kΩ and 2kΩ resistors in the feedback loop for an optimal gain,
+        minimizing signal loading and improving high-temperature accuracy.
         </p>
         <img src="0a914884-6b31-4684-9b3b-074cba686c42.png" alt="Op-Amp and Charge Pump Circuit" width="400">
 
-        <h2>Data Collection & Testing</h2>
+        <h2>Multiplexed Button Logic</h2>
         <p>
-        Temperature values were sampled at 2250Hz and averaged over 150 readings to reduce noise. Serial logging and threshold manipulation allowed efficient FSM debugging.
-        Comparative tests with a digital multimeter helped calibrate the system and reduce error to ±3°C between 25°C and 240°C.
+        Due to limited GPIO pins, we used a multiplexing scheme to read multiple buttons through a single input pin.
+        Each button connects to an output control line (P0.0–P0.3) and a shared input pin (P1.5) with a pull-up resistor.
+        Pressing a button while activating its control line pulls the input pin low, which the microcontroller detects.
         </p>
 
-        <h2>Analysis & Challenges</h2>
-        <p>
-        Initial inaccuracies were traced back to low op-amp feedback resistances. Swapping to higher resistance values resolved these. 
-        Thermal readings were further calibrated in software using offset corrections. Our testing process identified thermal lag issues, which were resolved with optimized gain and updated measurement logic.
-        </p>
+        <h3>Button Check Code</h3>
+        <pre><code>
+setb P0.3         ; Disable all button control lines
+clr P0.3          ; Activate PB0's control line
+mov c, P1.5       ; Read input pin, store in carry
+mov PB0, c        ; Save result: 0 = pressed, 1 = not pressed
+setb P0.3         ; Reset control line
+        </code></pre>
 
-        <h2>Conclusion</h2>
-        <p>
-        Through systematic testing, analysis, and iteration, our team successfully developed a robust reflow oven controller. The project demonstrated application of embedded systems to solve complex engineering problems, including sensor interfacing, control logic, and analog circuit design.
-        </p>
+        <h2>Finite State Machine Implementation</h2>
+        <img src="FSM Reflow (2).pdf" alt="FSM Diagram" width="600">
+
+        <h3>State 1 – Preheat</h3>
+        <pre><code>
+State_1:
+    jb kill_flag, jumpyError
+    mov a, state
+    cjne a, #1, State_2
+    mov state_sec, #0
+    mov pwm, #100
+    jb m_flag, Cond_check
+    setb debug_bit1
+    jnb temp_state1, jumpy
+    clr a
+    mov state, #2
+    mov state_sec, #0
+    ljmp State_2
+        </code></pre>
+
+        <h3>State 2 – Soak</h3>
+        <pre><code>
+State_2:
+    jb kill_flag, jumpyError
+    mov a, state
+    cjne a, #2, State_3
+    mov pwm, #20
+    jb err_tmp_150, jumpyErrorKill
+    mov a, state_sec
+    subb a, time_soak
+    jc jumpy
+    mov state, #3
+    mov state_sec, #0
+        </code></pre>
+
+        <h3>State 3 – Reflow</h3>
+        <pre><code>
+State_3:
+    jb kill_flag, State_error
+    mov a, state
+    cjne a, #3, State_4
+    mov pwm, #100
+    mov state_sec, #0
+    jb err_tmp_150, State_error_kill
+    jnb temp_state3, jumpy
+    clr a
+    mov state_sec, #0
+    mov state, #4
+        </code></pre>
+
+        <h3>State 4 – Reflow Hold</h3>
+        <pre><code>
+State_4:
+    jb kill_flag, State_error
+    mov a, state
+    cjne a, #4, State_5
+    mov pwm, #20
+    jb err_tmp_150, State_error_kill
+    mov a, state_sec
+    subb a, time_refl
+    jc jumpy
+    mov state, #5
+    mov state_sec, #0
+        </code></pre>
+
+        <h3>State 5 – Cooldown</h3>
+        <pre><code>
+State_5:
+    setb sound_flag
+    jb kill_flag, State_error
+    mov a, state
+    cjne a, #5, jumpy
+    mov pwm, #0
+    mov state_sec, #0
+    jb err_tmp_150, State_error_kill
+    jnb temp_state5, jumpy
+    mov state, #0
+    mov state_sec, #0
+    sjmp State_end
+        </code></pre>
+
+        <h3>Abort and End States</h3>
+        <pre><code>
+State_error_kill:
+    mov a, #0
+    mov state, a
+    sjmp State_end
+
+State_error:
+    mov a, #0
+    mov state, a
+    sjmp Display_0
+
+State_end:
+    clr c
+    mov c, start
+    clr a
+    mov acc.0, c
+    cpl a
+    mov c, acc.0
+    mov start, c
+    clr a
+    clr c
+    mov c, kill_flag
+    mov acc.0, c
+    cpl a
+    mov c, acc.0
+    mov kill_flag, c
+    clr m_flag
+    mov seconds, #0
+    sjmp Display_0
+        </code></pre>
     </div>
 </body>
 </html>
